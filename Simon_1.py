@@ -23,7 +23,7 @@ import random
 display = PicoGraphics(display=DISPLAY_PICO_DISPLAY, pen_type=PEN_P4, rotate=0)
 # display set up and parameters
 
-display.set_backlight(0.9)
+display.set_backlight(0.7)
 display.set_font("bitmap8")
 buzzer = PWM(Pin(3))  # (optional) hook up passive piezeo buzzer, + to pin 3, - to GND
 
@@ -36,7 +36,7 @@ button_y = Button(15)
 colours = (
     display.create_pen(0, 0, 0), 
     display.create_pen(255, 255, 0),
-    display.create_pen(0, 255, 0),
+    display.create_pen(0, 255, 100),
     display.create_pen(255, 0, 0),
     display.create_pen(0, 0, 255))
 
@@ -58,7 +58,7 @@ def clear():
     
 def text(words, delay):
     display.set_pen(colours[3])
-    display.text(words, 20, 60, 240, 3)
+    display.text(words, 20, 30, 210, 3)
     display.update()
     time.sleep(delay)
     clear()
@@ -201,16 +201,16 @@ while True:
             else:
                 clear()
                 playTone(400)
-                text("FAILURE - NO MATCH", .5)
+                text("FAILURE - NO MATCH", 1)
                 playTone(233)
                 levelStatus = "You reached level " + str(level-1)
-                text(levelStatus, 1)
+                text(levelStatus, 2)
                 beQuiet()
                 level = 0
                                
     if button_b.read():   # help screens
         clear()
-        text("Here are the four icons", 2)
+        text("Here are the 4 icons", 2)
         frame(centerX, centerY, thick) # display the frame
         # Display the icon, colour and tone
 
@@ -220,7 +220,7 @@ while True:
         showColourIcon(centerX, centerY, 4, speed, iconSize)
         clear()
         
-        text("Memorize the sequence of icons", 2)
-        text("Use the coloured buttons to repeat the sequence", 2)
+        text("Memorize the sequence of icons", 3)
+        text("Use the coloured buttons to repeat the sequence", 3)
         
-        print("Showing icons")
+        # print("Showing icons")
