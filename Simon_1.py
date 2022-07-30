@@ -1,3 +1,18 @@
+# Simon Says game... repeat after me.
+# Graham Kneen
+# July 31, 2022
+#
+# Hardware: Raspberry Pi Pico
+#           Pimoroni Pico Display PIM543
+# Optional  Pimoroni Pico Omnibus (dual expander) PIM556
+#           Passive piezeo buzzer
+#           F-F jumper wires
+#
+# Software: Pimoroni Micropython version 1.19.1 (uf2 file)
+#
+# Thanks to Bill at dronebotworkshop.com for a similar project
+# with discrete LEDs and coded in c/c++
+#
 from picographics import PicoGraphics, DISPLAY_PICO_DISPLAY, PEN_P4
 from machine import Pin, PWM
 from pimoroni import Button
@@ -10,7 +25,7 @@ display = PicoGraphics(display=DISPLAY_PICO_DISPLAY, pen_type=PEN_P4, rotate=0)
 
 display.set_backlight(0.9)
 display.set_font("bitmap8")
-buzzer = PWM(Pin(3))
+buzzer = PWM(Pin(3))  # (optional) hook up passive piezeo buzzer, + to pin 3, - to GND
 
 button_a = Button(12)
 button_b = Button(13)
@@ -26,14 +41,14 @@ colours = (
     display.create_pen(0, 0, 255))
 
 w,h = display.get_bounds()
-centerX = int(w/2)               # colour x boundary in frame
-centerY = int(h/2)               # colour y boundary in frame
+centerX = int(w/2)               # x boundary in coloured frame
+centerY = int(h/2)               # y boundary in coloured frame
 thick = 15                       # frame thickness  
 speed = 1                        # how long to show the dot
 iconSize = 30                    # display size of icons
 
 # parameters for Simon game
-MAX_LEVEL = 100
+MAX_LEVEL = 50
 
 # sets up a handy function we can call to clear the screen
 def clear():
@@ -43,7 +58,7 @@ def clear():
     
 def text(words, delay):
     display.set_pen(colours[3])
-    display.text(words, 0, 0, 240, 3)
+    display.text(words, 20, 60, 240, 3)
     display.update()
     time.sleep(delay)
     clear()
@@ -137,8 +152,8 @@ while True:
 
     if button_a.read():
         clear()
-        print("Start Game")
-        # generate random sequence of trials up to MAX_Level
+        # print("Start game")
+        # generate random sequence of coloured icons up to MAX_Level
         level = 1
         velocity = 1
         random.seed()
@@ -147,7 +162,7 @@ while True:
             select_icon = random.randint(1,4)
             sequence.append(select_icon)
         
-        # Show the sequence of icons
+        # Show the sequence of icons to the player
         while level > 0:
             frame(centerX, centerY, thick)
             time.sleep(1)
@@ -156,7 +171,7 @@ while True:
             clear()
             text("Use buttons to repeat sequence", 1)
             
-            # Get user sequence of icons
+            # Get player sequence of icons
             frame(centerX, centerY, thick)
             user_sequence = []
             for i in range(level):
@@ -170,12 +185,19 @@ while True:
                 if user_sequence[i] != sequence[i]:
                     status = 0
             if status == 1:
-                clear()
-                text("SUCCESS", .5)
-                levelStatus = "You have reached level " + str(level)
-                text(levelStatus, 1)
-                level = level +1
-                velocity = velocity - .005
+                if level < MAX_LEVEL:
+                    clear()
+                    text("SUCCESS", .5)
+                    levelStatus = "You have reached level " + str(level)
+                    text(levelStatus, 1)
+                    level = level +1
+                    velocity = velocity - .005   # speed up the display of icons
+                else:
+                    clear()
+                    text("Win! Win! Win!", 1)
+                    levelStatus = "You have reached the maximum level of " + str(level)
+                    text(levelStatus, 2)
+                    level = 0
             else:
                 clear()
                 playTone(400)
@@ -185,8 +207,8 @@ while True:
                 text(levelStatus, 1)
                 beQuiet()
                 level = 0
-                           
-    if button_b.read():
+                               
+    if button_b.read():   # help screens
         clear()
         text("Here are the four icons", 2)
         frame(centerX, centerY, thick) # display the frame
